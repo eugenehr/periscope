@@ -1,0 +1,13 @@
+{application, periscope,
+    [{description, "SOCKS Proxy and Tunnel"},
+        {vsn, "0.2.0"},
+        {registered, []},
+        {mod, {periscope_app, []}},
+        {applications, [kernel, stdlib, crypto, ssl, lager, ranch]},
+        {included_applications, [ranch]},
+        {modules, [periscope, periscope_app, periscope_sup, periscope_users, periscope_tun]}, 
+        {env, []},
+        {maintainers, [{"Eugene Khrustalev", "eugene.khrustalev@gmail.com"}]},
+        {licenses, ["Apache 2.0"]},
+        {links, []}
+    ]}.

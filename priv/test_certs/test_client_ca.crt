@@ -1,0 +1,69 @@
+Certificate:
+    Data:
+        Version: 1 (0x0)
+        Serial Number: 2 (0x2)
+    Signature Algorithm: md5WithRSAEncryption
+        Issuer: C=RU, ST=Default-City, L=DC, O=Periscope, CN=Periscope Test CA
+        Validity
+            Not Before: Jul  5 09:41:23 2018 GMT
+            Not After : Jun 11 09:41:23 2118 GMT
+        Subject: C=RU, ST=Default-City, L=DC, O=Periscope, CN=Periscope Test Client (CA)
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:ad:af:4c:a9:90:d4:22:82:aa:ce:a1:8d:c8:9f:
+                    7b:72:e6:4d:de:0a:d2:bc:fe:bd:52:58:7a:1e:3f:
+                    06:5f:bb:05:f1:d6:02:5f:b2:35:d7:ea:3c:4d:21:
+                    17:04:39:0a:d6:32:db:46:c6:aa:5d:02:74:2e:1f:
+                    1f:24:4e:d7:d5:33:59:5b:88:02:23:89:19:6e:5b:
+                    b5:8c:7d:10:56:a3:3f:d0:6c:d8:db:2e:d6:74:03:
+                    e3:00:d7:b2:a4:67:06:2e:ab:eb:52:42:d9:56:ba:
+                    42:d5:31:61:3d:14:0b:9e:28:f3:f2:c6:c7:10:b7:
+                    2b:89:11:1a:99:15:97:dc:ad:45:0f:08:49:53:31:
+                    b0:b8:12:0b:54:bd:04:e8:b8:47:5e:96:e8:62:04:
+                    9f:b3:62:d4:e3:dd:f8:41:1e:38:67:20:94:52:d7:
+                    26:ee:1f:b8:8b:fb:cd:cd:ba:44:dd:ab:49:bd:dd:
+                    91:1c:18:81:cf:3e:40:01:c0:73:64:8c:82:64:52:
+                    d3:9e:97:40:49:5c:ed:aa:a0:c8:2d:45:56:02:9c:
+                    3e:b5:eb:92:0f:70:2a:db:60:d3:ae:2e:6e:14:21:
+                    05:0e:3f:45:ad:14:b2:91:d9:f9:6e:cf:e4:ef:f6:
+                    0b:9f:4f:8a:db:3a:d2:c8:de:76:17:3c:31:13:f9:
+                    47:89
+                Exponent: 65537 (0x10001)
+    Signature Algorithm: md5WithRSAEncryption
+         86:77:32:40:fb:d7:d1:a3:82:57:8c:46:91:80:bb:c5:c0:33:
+         c4:78:ad:83:80:dc:f0:64:88:a5:5e:e4:62:e6:15:fb:c8:0e:
+         44:ec:8a:f4:f7:e5:f6:e4:e5:98:07:b6:64:87:8c:64:da:55:
+         2d:9b:ba:1f:09:76:5c:36:7e:8c:9b:c8:c5:0d:59:8b:4c:28:
+         fa:15:d8:99:9e:ca:6f:3e:14:d2:2d:15:0b:d6:ea:5d:9d:29:
+         09:0d:8e:91:13:a4:3b:90:50:21:ff:3d:a0:76:61:fe:46:9a:
+         f1:ba:20:8f:9a:0b:4f:e6:cd:52:61:e9:a9:a7:0c:06:12:1d:
+         18:80:31:a2:22:b5:1c:5e:91:02:37:e2:41:e6:8d:9d:dc:a0:
+         27:d2:39:83:fd:ac:88:1e:1d:ba:8c:43:c8:12:c3:48:f3:13:
+         2f:09:b3:6d:d3:62:1c:32:ff:92:15:6b:b7:28:9f:8b:62:75:
+         fb:53:d4:ce:7e:e4:cc:33:18:0f:5d:bc:d0:6c:6e:43:c9:8b:
+         71:89:0c:c9:46:5a:cf:64:23:36:4e:4e:d7:8d:90:65:4c:34:
+         98:23:2d:db:99:6e:a1:28:2f:68:75:bc:de:fb:fd:3e:7d:02:
+         b1:48:91:cf:3f:79:65:de:89:cf:a1:d0:5a:1e:02:29:88:05:
+         7b:f7:67:8b
+-----BEGIN CERTIFICATE-----
+MIIDQTCCAikCAQIwDQYJKoZIhvcNAQEEBQAwYTELMAkGA1UEBhMCUlUxFTATBgNV
+BAgMDERlZmF1bHQtQ2l0eTELMAkGA1UEBwwCREMxEjAQBgNVBAoMCVBlcmlzY29w
+ZTEaMBgGA1UEAwwRUGVyaXNjb3BlIFRlc3QgQ0EwIBcNMTgwNzA1MDk0MTIzWhgP
+MjExODA2MTEwOTQxMjNaMGoxCzAJBgNVBAYTAlJVMRUwEwYDVQQIDAxEZWZhdWx0
+LUNpdHkxCzAJBgNVBAcMAkRDMRIwEAYDVQQKDAlQZXJpc2NvcGUxIzAhBgNVBAMM
+GlBlcmlzY29wZSBUZXN0IENsaWVudCAoQ0EpMIIBIjANBgkqhkiG9w0BAQEFAAOC
+AQ8AMIIBCgKCAQEAra9MqZDUIoKqzqGNyJ97cuZN3grSvP69Ulh6Hj8GX7sF8dYC
+X7I11+o8TSEXBDkK1jLbRsaqXQJ0Lh8fJE7X1TNZW4gCI4kZblu1jH0QVqM/0GzY
+2y7WdAPjANeypGcGLqvrUkLZVrpC1TFhPRQLnijz8sbHELcriREamRWX3K1FDwhJ
+UzGwuBILVL0E6LhHXpboYgSfs2LU4934QR44ZyCUUtcm7h+4i/vNzbpE3atJvd2R
+HBiBzz5AAcBzZIyCZFLTnpdASVztqqDILUVWApw+teuSD3Aq22DTri5uFCEFDj9F
+rRSykdn5bs/k7/YLn0+K2zrSyN52FzwxE/lHiQIDAQABMA0GCSqGSIb3DQEBBAUA
+A4IBAQCGdzJA+9fRo4JXjEaRgLvFwDPEeK2DgNzwZIilXuRi5hX7yA5E7Ir09+X2
+5OWYB7Zkh4xk2lUtm7ofCXZcNn6Mm8jFDVmLTCj6FdiZnspvPhTSLRUL1updnSkJ
+DY6RE6Q7kFAh/z2gdmH+RprxuiCPmgtP5s1SYemppwwGEh0YgDGiIrUcXpECN+JB
+5o2d3KAn0jmD/ayIHh26jEPIEsNI8xMvCbNt02IcMv+SFWu3KJ+LYnX7U9TOfuTM
+MxgPXbzQbG5DyYtxiQzJRlrPZCM2Tk7XjZBlTDSYIy3bmW6hKC9odbze+/0+fQKx
+SJHPP3ll3onPodBaHgIpiAV792eL
+-----END CERTIFICATE-----

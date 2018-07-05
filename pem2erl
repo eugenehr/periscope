@@ -1,0 +1,52 @@
+#!/usr/bin/env escript
+%% -*- erlang -*-
+%% Copyright (c) Eugene Khrustalev 2018. All Rights Reserved.
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+
+%% @author Eugene Khrustalev <eugene.khrustalev@gmail.com>
+%% @doc PEM to Erlang module converter
+
+
+main([PEMFile, ERLFile]) ->
+    Module = filename:rootname(filename:basename(ERLFile)),
+    {ok, Content} = file:read_file(PEMFile),
+    Bin = [<<"%% ">>, list_to_binary(PEMFile), $\n,
+        <<"-module(">>, list_to_binary(Module), <<").">>, $\n, <<"-compile([bin_data/0]).">>, $\n, $\n,
+        <<"bin_data() ->">>, $\n, <<"<<">>, bin_to_hex(Content, [], 0), <<">>.">>, $\n],
+    file:write_file(ERLFile, Bin),
+    ok;
+
+main(_) ->
+    io:format("Usage: pem2erl <pem-file> <erl-module>~n"),
+    halt(1).
+
+
+bin_to_hex(<<>>, [], _) -> [];
+bin_to_hex(<<>>, Acc, _) -> lists:reverse(Acc);
+
+bin_to_hex(<<C, Tail/binary>>, Acc, Idx) ->
+    Bin = list_to_binary(integer_to_list(C)),
+    Bin2 = case Idx of
+        0 -> Bin;
+        _ ->
+            B = [<<",">>, Bin],
+            case Idx rem 24 of
+                0 -> [$\n, B];
+                _ -> B
+            end
+    end,
+    bin_to_hex(Tail, [Bin2 | Acc], Idx + 1).
+
+
+
