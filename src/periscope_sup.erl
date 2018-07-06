@@ -119,7 +119,9 @@ get_child(Id) ->
 
 %% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
 init([]) ->
-    {ok, {{rest_for_one, 5, 10}, []}}.
+    {ok, {{one_for_one, 5, 10}, [
+        ?WORKER_SPEC(periscope_users, periscope_users, [[]])
+    ]}}.
 
 
 %%====================================================================

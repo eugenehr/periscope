@@ -115,7 +115,10 @@ authenticate(Login, Password) ->
 %% @end
 %%--------------------------------------------------------------------
 set_users(Users) ->
-    periscope_users:set_users(Users).
+    % Stop, remove and restart the periscope_users process with new users lists
+    supervisor:terminate_child(periscope_sup, periscope_users),
+    supervisor:delete_child(periscope_sup, periscope_users),
+    periscope_sup:add_child(worker, periscope_users, [Users]).
 
 
 

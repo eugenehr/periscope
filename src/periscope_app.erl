@@ -68,7 +68,7 @@ init(PropList) ->
 
     %% Start periscope_users
     Users = proplists:get_all_values(user, PropList),
-    {ok, _} = periscope_sup:add_child(worker, periscope_users, [Users]),
+    periscope:set_users(Users),
 
     %% Start tunnels
     [periscope:start_tunnel(Port, Opts) || {Port, Opts} <- proplists:get_all_values(tunnel, PropList)],
