@@ -96,12 +96,15 @@ server_handshake(Transport, Socket, {EncType, InfoKey}) when EncType =:= aes128g
     Password = crypto:compute_key(dh, ClientPub, ServerPriv, DHParams),
     server_handshake(Transport, Socket, {EncType, InfoKey, Password, ?DEFAULT_AAD, Salt});
 
-server_handshake(Transport, Socket, {EncType, InfoKey, Password}) when EncType =:= aes128gcm; 
+server_handshake(Transport, Socket, {EncType, InfoKey, Password}) ->
+    server_handshake(Transport, Socket, {EncType, InfoKey, Password, ?DEFAULT_AAD});
+
+server_handshake(Transport, Socket, {EncType, InfoKey, Password, AAD}) when EncType =:= aes128gcm; 
         EncType =:= aes192gcm; EncType =:= aes256gcm; EncType =:= chacha20_poly1305 -> 
     Transport:setopts(Socket, [{packet, 0}, {active, false}]),
     {KeySize, _NonceSize, _TagSize} = crypto_sizes(EncType),
     {ok, Salt} = Transport:recv(Socket, KeySize, ?HANDSHAKE_TIMEOUT), 
-    server_handshake(Transport, Socket, {EncType, InfoKey, Password, ?DEFAULT_AAD, Salt});
+    server_handshake(Transport, Socket, {EncType, InfoKey, Password, AAD, Salt});
 
 server_handshake(Transport, Socket, {EncType, InfoKey, Password, AAD, DeSalt}) when EncType =:= aes128gcm; 
         EncType =:= aes192gcm; EncType =:= aes256gcm; EncType =:= chacha20_poly1305 -> 
@@ -157,11 +160,14 @@ client_handshake(Transport, Socket, {EncType, InfoKey}) when EncType =:= aes128g
     Password = crypto:compute_key(dh, ServerPub, ClientPriv, DHParams),
     client_handshake(Transport, Socket, {EncType, InfoKey, Password, ?DEFAULT_AAD, Salt});
 
-client_handshake(Transport, Socket, {EncType, InfoKey, Password}) when EncType =:= aes128gcm; 
+client_handshake(Transport, Socket, {EncType, InfoKey, Password}) ->
+    client_handshake(Transport, Socket, {EncType, InfoKey, Password, ?DEFAULT_AAD});
+
+client_handshake(Transport, Socket, {EncType, InfoKey, Password, AAD}) when EncType =:= aes128gcm; 
         EncType =:= aes192gcm; EncType =:= aes256gcm; EncType =:= chacha20_poly1305 -> 
     Salt = create_salt(EncType),
     ok = Transport:send(Socket, Salt),
-    client_handshake(Transport, Socket, {EncType, InfoKey, Password, ?DEFAULT_AAD, Salt});
+    client_handshake(Transport, Socket, {EncType, InfoKey, Password, AAD, Salt});
 
 client_handshake(Transport, Socket, {EncType, InfoKey, Password, AAD, EnSalt}) when EncType =:= aes128gcm; 
         EncType =:= aes192gcm; EncType =:= aes256gcm; EncType =:= chacha20_poly1305 -> 

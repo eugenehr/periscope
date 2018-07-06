@@ -30,7 +30,8 @@ tun_test_() ->
         {with, [
             fun(Port) -> direct_echo(Port) end,
             fun(Port) -> tunnels_range(Port) end,
-            fun(Port) -> tunnels_chain(Port) end
+            fun(Port) -> tunnels_chain(Port) end,
+            fun(Port) -> encrypted_chain(Port) end
         ]}
     }]}.
 
@@ -89,8 +90,54 @@ tunnels_chain(ServerPort) ->
     
     periscope:stop_tunnel(Id4).
 
-    
-    
+encrypted_chain(ServerPort) ->
+    CertDir = filename:join(code:priv_dir(periscope), "test_certs"),
+    {ok, Id1, _Pid1} = periscope:start_tunnel(32001, [
+        {dest, {"127.0.0.1", ServerPort}}
+    ]),
+    {ok, Id2, _Pid2} = periscope:start_tunnel(32002, [
+        {encryption, aes128gcm},
+        {dest, {"127.0.0.1", 32001}}
+    ]),
+    {ok, Id3, _Pid3} = periscope:start_tunnel(32003, [
+        {encryption, {aes192gcm, "subkey1", "password1"}},
+        {dest, {"127.0.0.1", 32002, [{encryption, {aes128gcm}}]}}
+    ]),
+    {ok, Id4, _Pid4} = periscope:start_tunnel(32004, [
+        {encryption, {aes256gcm, "subkey2", "password2", "AAD2"}},
+        {dest, {"127.0.0.1", 32003, [{encryption, {aes192gcm, "subkey1", "password1"}}]}}
+    ]),
+    {ok, Id5, _Pid5} = periscope:start_tunnel(32005, [
+        {ssl, [
+            {certfile, filename:join(CertDir, "test_server.pem")}
+            ,{cacertfile, filename:join(CertDir, "test_ca.pem")}
+            ,{verify, verify_peer}
+        ]},
+        {encryption, {aes256gcm, "subkey3", "password3", "AAD3"}},
+        {dest, {"127.0.0.1", 32004, [{encryption, {aes256gcm, "subkey2", "password2", "AAD2"}}]}}
+    ]),
+    {ok, Id6, _Pid6} = periscope:start_tunnel(32006, [
+        {ssl, [
+            {certfile, filename:join(CertDir, "test_server.pem")}
+            ,{cacertfile, filename:join(CertDir, "test_ca.pem")}
+            ,{verify, verify_peer}
+        ]},
+        {dest, {"localhost", 32005, [
+            {encryption, {aes256gcm, "subkey3", "password3", "AAD3"}},
+            {ssl, [
+                {certfile, filename:join(CertDir, "test_client_ca.pem")}
+                ,{cacertfile, filename:join(CertDir, "test_ca.pem")}
+                ,{verify, verify_peer}
+            ]}
+        ]}}
+    ]),
+
+    ssl_send_recv("localhost", 32006, [
+        {certfile, filename:join(CertDir, "test_client_ca.pem")}
+        ,{cacertfile, filename:join(CertDir, "test_ca.pem")}
+        ,{verify, verify_peer}]),
+        
+    [periscope:stop_tunnel(Id) || Id <- [Id1, Id2, Id3, Id4, Id5, Id6]].    
     
 
 
@@ -145,17 +192,17 @@ tcp_send_recv(Address, Port, Opts, EncType) ->
 
 
 
-%ssl_send_recv(Address, Port, Opts) ->
-%    ssl_send_recv(Address, Port, Opts, none).
-%
-%ssl_send_recv(Address, Port, Opts, EncType) ->
-%    {ok, Socket} = ssl:connect(Address, Port, Opts),
-%    {ok, EncS1} = periscope_crypto:client_handshake(ranch_ssl, Socket, EncType),
-%    ssl:setopts(Socket, [binary, {active, false}]),
-%    
-%    {ok, Encrypted1, EncS2} = periscope_crypto:encrypt(ssl, Socket, <<"data1">>, EncS1),
-%    ok = ssl:send(Socket, Encrypted1),
-%    {ok, Encrypted2} = ssl:recv(Socket, 0),
-%    {ok, Decrypted, _EncS3} = periscope_crypto:decrypt(ssl, Socket, Encrypted2, EncS2),
-%    <<"data1">> = to_binary(Decrypted),
-%    ssl:close(Socket).
+ssl_send_recv(Address, Port, Opts) ->
+    ssl_send_recv(Address, Port, Opts, none).
+
+ssl_send_recv(Address, Port, Opts, EncType) ->
+    {ok, Socket} = ssl:connect(Address, Port, Opts),
+    {ok, EncS1} = periscope_crypto:client_handshake(ranch_ssl, Socket, EncType),
+    ssl:setopts(Socket, [binary, {active, false}]),
+    
+    {ok, Encrypted1, EncS2} = periscope_crypto:encrypt(ssl, Socket, <<"data1">>, EncS1),
+    ok = ssl:send(Socket, Encrypted1),
+    {ok, Encrypted2} = ssl:recv(Socket, 0),
+    {ok, Decrypted, _EncS3} = periscope_crypto:decrypt(ssl, Socket, Encrypted2, EncS2),
+    <<"data1">> = to_binary(Decrypted),
+    ssl:close(Socket).
