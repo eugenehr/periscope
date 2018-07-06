@@ -24,7 +24,7 @@
 
 
 tun_test_() ->
-    {timeout, 600, [{"Periscope tunnel tests...", setup,
+    {timeout, 6000, [{"Periscope tunnel tests...", setup,
         fun setup/0,
         fun cleanup/1,
         {with, [
