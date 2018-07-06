@@ -69,7 +69,7 @@
 %% @end
 %%--------------------------------------------------------------------
 server_handshake(Transport, Socket, none) -> 
-    Transport:setopts(Socket, [{packet, 0}, binary, {keepalive, true}, {nodelay, true}]),
+    Transport:setopts(Socket, [{packet, 0}]),
     {ok, none};
 
 server_handshake(Transport, Socket, EncType) when is_atom(EncType) -> 
@@ -98,19 +98,17 @@ server_handshake(Transport, Socket, {EncType, InfoKey}) when EncType =:= aes128g
 
 server_handshake(Transport, Socket, {EncType, InfoKey, Password}) when EncType =:= aes128gcm; 
         EncType =:= aes192gcm; EncType =:= aes256gcm; EncType =:= chacha20_poly1305 -> 
-    Transport:setopts(Socket, [{packet, 0}, binary, {active, false}]),
+    Transport:setopts(Socket, [{packet, 0}, {active, false}]),
     {KeySize, _NonceSize, _TagSize} = crypto_sizes(EncType),
     {ok, Salt} = Transport:recv(Socket, KeySize, ?HANDSHAKE_TIMEOUT), 
-    lager:debug("Decryption salt received from the client: ~p~n", [Salt]),
     server_handshake(Transport, Socket, {EncType, InfoKey, Password, ?DEFAULT_AAD, Salt});
 
 server_handshake(Transport, Socket, {EncType, InfoKey, Password, AAD, DeSalt}) when EncType =:= aes128gcm; 
         EncType =:= aes192gcm; EncType =:= aes256gcm; EncType =:= chacha20_poly1305 -> 
-    Transport:setopts(Socket, [{packet, 0}, binary, {keepalive, true}, {nodelay, true}]),
+    Transport:setopts(Socket, [{packet, 0}]),
     % Generate key and salt for backward encryption and send salt to the client 
     {EnKey, EnSalt} = subkey(EncType, to_binary(Password), to_binary(InfoKey)),
     ok = Transport:send(Socket, EnSalt),
-    lager:debug("Encryption salt sent to the client: ~p~n", [EnSalt]),
     {DeKey, DeSalt} = subkey(EncType, to_binary(Password), to_binary(InfoKey), DeSalt),
     {ok, {EncType, {0, EnKey, to_binary(AAD)}, {0, DeKey, to_binary(AAD)}}}.
 
@@ -130,8 +128,7 @@ server_handshake(Transport, Socket, {EncType, InfoKey, Password, AAD, DeSalt}) w
 %% Starts a handshake procedure on the client.
 %% @end
 %%--------------------------------------------------------------------
-client_handshake(Transport, Socket, none) -> 
-    Transport:setopts(Socket, [{packet, 0}, binary, {keepalive, true}, {nodelay, true}]),
+client_handshake(_Transport, _Socket, none) -> 
     {ok, none};
 
 client_handshake(Transport, Socket, EncType) when is_atom(EncType) -> 
@@ -143,7 +140,7 @@ client_handshake(Transport, Socket, {EncType}) when is_atom(EncType) ->
 client_handshake(Transport, Socket, {EncType, InfoKey}) when EncType =:= aes128gcm; 
         EncType =:= aes192gcm; EncType =:= aes256gcm; EncType =:= chacha20_poly1305 -> 
     % Generate P,G and Session secret key according to Diffie-Helman algorithm and exchange with server 
-    Transport:setopts(Socket, [{packet, 2}, binary, {active, false}]),
+    Transport:setopts(Socket, [{packet, 2}, {active, false}]),
     DHPrime = ?DH_PRIME, DHGen = ?DH_GENERATOR,
     DHParams = [DHPrime, DHGen],
     {ClientPub, ClientPriv} = crypto:generate_key(dh, DHParams),
@@ -164,15 +161,13 @@ client_handshake(Transport, Socket, {EncType, InfoKey, Password}) when EncType =
         EncType =:= aes192gcm; EncType =:= aes256gcm; EncType =:= chacha20_poly1305 -> 
     Salt = create_salt(EncType),
     ok = Transport:send(Socket, Salt),
-    lager:debug("Encryption salt sent to the server: ~p~n", [Salt]),
     client_handshake(Transport, Socket, {EncType, InfoKey, Password, ?DEFAULT_AAD, Salt});
 
 client_handshake(Transport, Socket, {EncType, InfoKey, Password, AAD, EnSalt}) when EncType =:= aes128gcm; 
         EncType =:= aes192gcm; EncType =:= aes256gcm; EncType =:= chacha20_poly1305 -> 
-    Transport:setopts(Socket, [{packet, 0}, binary, {active, false}, {keepalive, true}, {nodelay, true}]),
+    Transport:setopts(Socket, [{packet, 0}, {active, false}]),
     {KeySize, _NonceSize, _TagSize} = crypto_sizes(EncType),
     {ok, DeSalt} = Transport:recv(Socket, KeySize, ?HANDSHAKE_TIMEOUT), 
-    lager:debug("Decryption salt received from the client: ~p~n", [DeSalt]),
     {EnKey, EnSalt} = subkey(EncType, to_binary(Password), to_binary(InfoKey), EnSalt),
     {DeKey, DeSalt} = subkey(EncType, to_binary(Password), to_binary(InfoKey), DeSalt),
     {ok, {EncType, {0, EnKey, to_binary(AAD)}, {0, DeKey, to_binary(AAD)}}}.
@@ -199,7 +194,7 @@ encrypt(_Transport, _Socket, Data, none) ->
     {ok, Data, none};
 
 %% Encrypt UDP packet without counter increment
-encrypt(Transport, _Socket, Data, {_EncType, {_EnCounter, _EnKey, _AAD1}, {_DeCounter, _DeKey, _AAD2}}) when Transport =:= gen_udp -> 
+encrypt(Transport, _Socket, Data, {_EncType, {_EnCounter, _EnKey, _EnAAD}, {_DeCounter, _DeKey, _DeAAD}}) when Transport =:= gen_udp -> 
     {ok, Data, none};
 
 %% Encrypt TCP packet and increment counter (twice)
@@ -243,13 +238,13 @@ encrypt(Transport, _Socket, Data, {EncType, {EnCounter, EnKey, EnAAD}, DecState}
 decrypt(_Transport, _Socket, Data, none) -> 
     {ok, Data, none};
 
-decrypt(Transport, _Socket, Data, {_EncType, {{_EnCounter, _EnKey}, {_DeCounter, _DeKey}}}) when Transport =:= gen_udp -> 
+decrypt(Transport, _Socket, Data, {_EncType, {{_EnCounter, _EnKey, _EnAAD}, {_DeCounter, _DeKey, _DeAAD}}}) when Transport =:= gen_udp -> 
     {ok, Data, none};
 
 decrypt(Transport, Socket, Data, {EncType, EncState, {DeCounter, DeKey, DeAAD}}) when Transport =/= gen_udp -> 
     AEADType = if EncType =:= chacha20_poly1305 -> chacha20_poly1305; true -> aes_gcm end,
     {_KeySize, NonceSize, TagSize} = crypto_sizes(EncType),
-    <<EncDataLen:2/binary, EncLenTag:TagSize/binary, Tail/binary>> = to_binary(Data),
+    <<EncDataLen:2/binary, EncLenTag:TagSize/binary, Tail/binary>> = ensure_size(Transport, Socket, to_binary(Data), TagSize + 2),
     IVec1 = <<DeCounter:NonceSize/integer-little-unit:8>>,
     DataLenBin = crypto:block_decrypt(AEADType, DeKey, IVec1, {DeAAD, EncDataLen, EncLenTag}),
     DataLen = binary:decode_unsigned(DataLenBin, big),
@@ -342,5 +337,6 @@ ensure_size(_Transport, _Socket, Binary, Size) when byte_size(Binary) >= Size ->
     Binary;
 
 ensure_size(Transport, Socket, Binary, Size) ->
+    Transport:setopts(Socket, [{active, false}]),
     {ok, Tail} = Transport:recv(Socket, Size-byte_size(Binary), ?READ_TIMEOUT),
     <<Binary/binary, Tail/binary>>.

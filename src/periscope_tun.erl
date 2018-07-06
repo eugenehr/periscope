@@ -93,8 +93,8 @@ init(Ref, Socket, Transport, #{keepalive := Keepalive, encryption := Encryption,
 %% @doc Receives messages data from one socket and sends it to another
 loop(#{sock1 := Socket1, trans1 := Transport1, sock2 := Socket2, trans2 := Transport2, tunnel := Tunnel, 
        keepalive := Keepalive, encrypt1 := Encryption1, encrypt2 := Encryption2} = State) ->
-    Transport1:setopts(Socket1, [{active, once}]),
-    Transport2:setopts(Socket2, [{active, once}]),
+    Transport1:setopts(Socket1, [binary, {packet, 0}, {active, once}, {keepalive, true}, {nodelay, true}]),
+    Transport2:setopts(Socket2, [binary, {packet, 0}, {active, once}, {keepalive, true}, {nodelay, true}]),
     case receive_msg(Keepalive) of
         {Type, Socket} when Type =:= tcp_closed; Type =:= ssl_closed -> 
             % If one of the sockets is closed then exit
