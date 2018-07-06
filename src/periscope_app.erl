@@ -35,7 +35,7 @@
 
 
 start(_StartType, _StartArgs) ->
-    lager:info("Starting Periscope application..."),
+    lager:debug("Starting Periscope application..."),
     case init:get_argument(conf) of
         % Read configuration file passed after -conf command line argument
         {ok, [[Filename]]} ->
