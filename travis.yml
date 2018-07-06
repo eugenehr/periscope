@@ -6,3 +6,7 @@ otp_release:
   - 20.3
   - 21.0
 sudo: false
+branches:
+  only:
+      - master
+      - develop
